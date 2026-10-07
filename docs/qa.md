@@ -6,7 +6,7 @@ Executed in the isolated Linux cloud workspace on 2026-10-07. No build ran on th
 | --- | --- |
 | Backend / real PostgreSQL 17.11 | 10 tests passed, zero failures (7 integration, 3 focused safety tests) |
 | Frontend | Strict TypeScript, Angular production build and 2 unit tests passed |
-| Browser | 4 Chromium tests passed against the final non-root runtime container |
+| Browser | 4 Chromium tests passed against the packaged same-origin application; container workflow also verified |
 | Mobile | 390-pixel checklist has no horizontal page overflow |
 | Print | Actual print action tested, controls hidden in print CSS, PDF generated |
 | Accessibility | Keyboard-only sign-in and axe WCAG A/AA checks passed on login, jobs and checklist |

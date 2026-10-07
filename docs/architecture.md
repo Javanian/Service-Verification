@@ -42,3 +42,5 @@ Print CSS produces a portable invoice attachment without headless-browser infras
 ## ADR 005: Exact versions and a controlled release candidate
 
 The frontend lockfile, pinned Boot parent, Maven wrapper checksum and image digests constrain builds. Docker packaging skips tests because the independent Verify workflow runs them against PostgreSQL first. A manual workflow exports a container artifact with the source commit label. It has no deployment or registry permissions. Do not equate a successful build with production approval.
+
+Angular critical-CSS inlining is disabled: its generated inline stylesheet-load handler conflicts with the strict script CSP. External stylesheet loading is checked by browser assertions for the mobile and report layouts. No unsafe inline script exception is added.

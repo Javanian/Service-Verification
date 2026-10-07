@@ -12,14 +12,26 @@
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.json",
-            "styles": ["src/styles.css"],
+            "styles": [
+              "src/styles.css"
+            ],
             "outputPath": "dist",
-            "outputHashing": "all"
+            "outputHashing": "all",
+            "optimization": {
+              "scripts": true,
+              "styles": {
+                "minify": true,
+                "inlineCritical": false
+              },
+              "fonts": false
+            }
           }
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": { "buildTarget": "proof:build" }
+          "options": {
+            "buildTarget": "proof:build"
+          }
         }
       }
     }

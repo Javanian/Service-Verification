@@ -92,6 +92,8 @@ test("owner and technician complete correction, approval, immutable revision and
   await tp.getByRole("button", { name: "Save checklist" }).click();
   await expect(tp.getByRole("status")).toContainText("Unit checklist saved");
   await expect(tp.locator("body")).toHaveJSProperty("scrollWidth", 390);
+  await expect(tp.locator(".unit")).toHaveCSS("border-radius", "16px");
+  await expect(tp.locator("header")).toHaveCSS("display", "flex");
   await tp.screenshot({
     path: "../evidence/mobile-checklist.png",
     fullPage: true,
@@ -138,6 +140,7 @@ test("owner and technician complete correction, approval, immutable revision and
   await page.locator(".report img").evaluateAll(async (images) => {
     await Promise.all(images.map((img) => (img as HTMLImageElement).decode()));
   });
+  await expect(page.locator(".report .card")).toHaveCSS("border-radius", "16px");
   await page.screenshot({
     path: "../evidence/approved-report.png",
     fullPage: true,
