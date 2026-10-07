@@ -1,0 +1,10 @@
+.git
+.env
+**/node_modules
+**/target
+**/dist
+**/.angular
+**/test-results
+**/playwright-report
+evidence
+backend/src/main/resources/static

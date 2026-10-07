@@ -1,0 +1,37 @@
+name: service-proof
+services:
+  db:
+    image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+    environment:
+      POSTGRES_DB: serviceproof
+      POSTGRES_USER: serviceproof
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - proof-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U serviceproof -d serviceproof]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/serviceproof
+      DB_USER: serviceproof
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      OWNER_USERNAME: ${OWNER_USERNAME:?Set OWNER_USERNAME in .env}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:?Set OWNER_PASSWORD in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    ports:
+      - 127.0.0.1:8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m
+volumes:
+  proof-data:

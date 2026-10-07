@@ -1,0 +1,397 @@
+<header class="no-print">
+  <a class="brand" href="/"
+    >▦ <span>Service Proof<small>EVERY UNIT, ACCOUNTED FOR</small></span></a
+  >@if(session().username){
+  <div class="account">
+    <span
+      >{{session().username}} · {{session().owner?'Owner':'Technician'}}</span
+    ><button class="quiet" (click)="logout()" [disabled]="busy()">
+      Sign out
+    </button>
+  </div>
+  }
+</header>
+<main>
+  <div class="no-print" role="alert" aria-live="assertive">
+    @if(error()){
+    <div class="alert error">{{error()}}</div>
+    }
+  </div>
+  <div class="no-print" role="status" aria-live="polite">
+    @if(notice()){
+    <div class="alert success">{{notice()}}</div>
+    }@if(busy()){
+    <p>Saving or loading…</p>
+    }
+  </div>
+  @if(!session().username){
+  <section class="login">
+    <div>
+      <p class="eyebrow">LESS PAPERWORK. MORE CONFIDENCE.</p>
+      <h1>Good service.<br />Clear evidence.</h1>
+      <p class="lede">
+        Check every unit, keep before-and-after photos together, and hand over a
+        service record you can stand behind.
+      </p>
+      <div class="steps">
+        01 &nbsp; Document <span>→</span> 02 &nbsp; Review <span>→</span> 03
+        &nbsp; Attach
+      </div>
+    </div>
+    <form class="card" (ngSubmit)="login()">
+      <h2>Welcome back</h2>
+      <p>Sign in to your service workspace.</p>
+      <label
+        >Username<input
+          name="username"
+          [(ngModel)]="username"
+          autocomplete="username"
+          required /></label
+      ><label
+        >Password<input
+          name="password"
+          [(ngModel)]="password"
+          type="password"
+          autocomplete="current-password"
+          required /></label
+      ><button [disabled]="busy()">Sign in</button
+      ><small
+        >Your service photos are private to this workspace’s owner and assigned
+        technician.</small
+      >
+    </form>
+  </section>
+  } @else if(report(); as r){
+  <section class="report">
+    <div class="toolbar no-print">
+      <button class="quiet" (click)="report.set(null)">← Back to job</button
+      ><button (click)="print()">Print / Save PDF</button>
+    </div>
+    <p class="eyebrow">SERVICE PROOF / APPROVED RECORD</p>
+    <h1>Service report</h1>
+    <p class="lede">{{r.job.customer}} · {{r.job.location}}</p>
+    <dl class="metadata">
+      <div>
+        <dt>Invoice reference</dt>
+        <dd>{{r.job.invoice}}</dd>
+      </div>
+      <div>
+        <dt>Revision</dt>
+        <dd>{{r.job.revision}}</dd>
+      </div>
+      <div>
+        <dt>Technician account</dt>
+        <dd>{{r.job.technician}}</dd>
+      </div>
+      <div>
+        <dt>Approved by</dt>
+        <dd>{{r.approvedBy}} · {{r.approvedAt | date:'medium'}}</dd>
+      </div>
+    </dl>
+    @for(u of r.job.units;track u.id){
+    <article class="card report-unit">
+      <h2>{{u.label}}</h2>
+      <p>✓ Cleaned &nbsp; ✓ Drain checked &nbsp; ✓ Cooling checked</p>
+      <p class="actions-text">{{u.actions}}</p>
+      <div class="photos">
+        @for(kind of ['before','after'];track kind){
+        <figure>
+          <img
+            [src]="'/api/photos/'+(kind==='before'?u.before_id:u.after_id)"
+            [alt]="u.label+' '+kind"
+          />
+          <figcaption>
+            {{kind==='before'?'Before service':'After service'}}
+          </figcaption>
+        </figure>
+        }
+      </div>
+    </article>
+    }
+    <footer>
+      Job {{r.job.id}} · Revision {{r.job.revision}}<br />This record documents
+      submitted service evidence. Photos are not tamper-proof; account
+      identities are not independently verified. This is an invoice attachment,
+      not an invoice.
+    </footer>
+  </section>
+  } @else if(selected(); as j){
+  <div class="toolbar no-print">
+    <button class="quiet" (click)="selected.set(null)">← All jobs</button
+    ><button class="quiet" (click)="open(j.id)" [disabled]="busy()">
+      Reload job
+    </button>
+  </div>
+  <section class="job-heading">
+    <div>
+      <p class="eyebrow">{{j.invoice}} / REVISION {{j.revision}}</p>
+      <h1>{{j.customer}}</h1>
+      <p>{{j.location}} · Assigned to {{j.technician}}</p>
+    </div>
+    <span class="badge">{{j.status.replaceAll('_',' ')}}</span>
+  </section>
+  @if(j.reason){
+  <div class="alert correction">
+    <strong>Review note</strong>
+    <p>{{j.reason}}</p>
+  </div>
+  }
+  <div class="progress">
+    <span>{{done(j)}} of {{j.units.length}} units complete</span
+    ><progress [value]="done(j)" [max]="j.units.length"></progress
+    ><small
+      >Save each checklist before submitting. All checks, actions and both
+      photos are required.</small
+    >
+  </div>
+  @if(failed(); as f){
+  <div class="alert error">
+    Photo not confirmed: {{f.file.name}}. Your file is ready to retry.
+    <button (click)="upload(f)" [disabled]="busy()">Retry upload</button>
+  </div>
+  } @for(u of j.units;track u.id){
+  <article class="card unit">
+    <div class="toolbar">
+      <h2>{{u.label}}</h2>
+      <span class="badge" [class.ready]="complete(u)"
+        >{{complete(u)?'Complete':'Needs evidence'}}</span
+      >
+    </div>
+    <fieldset [disabled]="!editable(j)||busy()">
+      <legend>Service checklist</legend>
+      <div class="checks">
+        <label
+          ><input
+            type="checkbox"
+            [(ngModel)]="u.cleaned"
+            (ngModelChange)="mark(u.id)"
+          />Coil and filter cleaned</label
+        ><label
+          ><input
+            type="checkbox"
+            [(ngModel)]="u.drain_checked"
+            (ngModelChange)="mark(u.id)"
+          />Drain checked</label
+        ><label
+          ><input
+            type="checkbox"
+            [(ngModel)]="u.cooling_checked"
+            (ngModelChange)="mark(u.id)"
+          />Cooling checked</label
+        >
+      </div>
+      <label
+        >Service actions & observations<textarea
+          [(ngModel)]="u.actions"
+          (ngModelChange)="mark(u.id)"
+          maxlength="2000"
+          rows="3"
+          placeholder="Describe work performed and any follow-up needed."
+        ></textarea>
+      </label>
+      <div class="photos">
+        @for(kind of ['before','after'];track kind){
+        <figure>
+          @if(kind==='before'?u.before_id:u.after_id){<img
+            [src]="'/api/photos/'+(kind==='before'?u.before_id:u.after_id)"
+            [alt]="u.label+' '+kind"
+          />}@else{
+          <div class="photo-empty">
+            {{kind==='before'?'01 / Before service':'02 / After service'}}
+          </div>
+          }
+          <figcaption>
+            {{kind==='before'?'Before service':'After service'}}
+          </figcaption>
+          @if(editable(j)){<label class="upload"
+            >{{kind==='before'?(u.before_id?'Replace before photo':'Add before
+            photo'):(u.after_id?'Replace after photo':'Add after photo')}}<input
+              type="file"
+              accept="image/jpeg,image/png"
+              (change)="choose($event,u,kind)" /></label
+          >}
+        </figure>
+        }
+      </div>
+      @if(editable(j)){<small
+        >JPEG or PNG · up to 5 MB and 12 megapixels. Uploads save
+        immediately.</small
+      ><button (click)="save(u)">Save checklist</button>}
+    </fieldset>
+  </article>
+  }
+  <section class="card review">
+    <h2>Review & handover</h2>
+    @if(editable(j)){
+    <p>Ready for the owner? Submit the saved evidence for every unit.</p>
+    @if(dirty().size){
+    <p class="alert correction">
+      Save your edited checklists before submitting.
+    </p>
+    }<button
+      (click)="transition('submit')"
+      [disabled]="busy()||dirty().size>0||!!failed()"
+    >
+      Submit for review</button
+    >}@if(j.status==='SUBMITTED'){
+    <p>Submitted evidence is locked while the owner reviews it.</p>
+    @if(session().owner){<label
+      >Correction reason<textarea
+        [(ngModel)]="reason"
+        maxlength="1000"
+        placeholder="Be specific about what needs changing."
+      ></textarea>
+    </label>
+    <div class="buttons">
+      <button
+        class="quiet"
+        (click)="transition('request-changes')"
+        [disabled]="busy()||!reason.trim()"
+      >
+        Request changes</button
+      ><button (click)="transition('approve')" [disabled]="busy()">
+        Approve report
+      </button>
+    </div>
+    }}@if(j.status==='APPROVED'){
+    <p>
+      Approved report is locked. Later changes create a new revision; existing
+      reports stay unchanged.
+    </p>
+    @if(session().owner){<label
+      >Reason for a new revision<textarea
+        [(ngModel)]="reason"
+        maxlength="1000"
+      ></textarea></label
+    ><button
+      class="quiet"
+      (click)="transition('revise')"
+      [disabled]="busy()||!reason.trim()"
+    >
+      Start new revision</button
+    >}} @for(r of j.reports;track r.revision){<button
+      class="report-link"
+      (click)="showReport(r.revision)"
+    >
+      View approved report · Revision {{r.revision}} ↗</button
+    >}
+  </section>
+  <details class="card">
+    <summary>Activity history</summary>
+    @for(e of j.events;track $index){
+    <p>
+      {{e.created_at|date:'short'}} · {{e.actor}} · {{e.action.replaceAll('_','
+      ')}} {{e.detail}}
+    </p>
+    }
+  </details>
+  } @else {
+  <section class="job-heading">
+    <div>
+      <p class="eyebrow">YOUR SERVICE WORKSPACE</p>
+      <h1>Small details.<br />Work well documented.</h1>
+      <p>
+        {{jobs().length}} jobs · A clear record from first photo to final
+        approval.
+      </p>
+    </div>
+    @if(session().owner){<button (click)="creating.set(!creating())">
+      {{creating()?'Close form':'+ New service job'}}</button
+    >}
+  </section>
+  @if(creating()){
+  <form class="card create" (ngSubmit)="create()">
+    <h2>Create service job</h2>
+    <div class="form-grid">
+      <label
+        >Customer<input
+          name="customer"
+          [(ngModel)]="customer"
+          maxlength="160"
+          required /></label
+      ><label
+        >Location<input
+          name="location"
+          [(ngModel)]="location"
+          maxlength="300"
+          required /></label
+      ><label
+        >External invoice reference<input
+          name="invoice"
+          [(ngModel)]="invoice"
+          maxlength="100"
+          required /></label
+      ><label
+        >Assigned technician<select
+          name="technician"
+          [(ngModel)]="technician"
+          required
+        >
+          <option value="">Choose technician</option>
+          @for(t of techs();track t.username){
+          <option [value]="t.username">{{t.username}}</option>
+          }
+        </select></label
+      >
+    </div>
+    <label
+      >AC unit labels · one per line<textarea
+        name="units"
+        [(ngModel)]="unitLabels"
+        required
+        placeholder="Reception · AC-01&#10;Meeting room · AC-02"
+      ></textarea></label
+    ><button [disabled]="busy()">Create job</button>
+  </form>
+  }
+  <section class="job-list" aria-label="Service jobs">
+    @for(j of jobs();track j.id){<button class="job-card" (click)="open(j.id)">
+      <div class="toolbar">
+        <span class="eyebrow">{{j.invoice}}</span
+        ><span class="badge">{{j.status.replaceAll('_',' ')}}</span>
+      </div>
+      <h2>{{j.customer}}</h2>
+      <p>{{j.location}}</p>
+      <div class="toolbar">
+        <small>{{j.technician}} · Revision {{j.revision}}</small
+        ><span>Open job →</span>
+      </div></button
+    >}@empty{
+    <div class="card empty">
+      <h2>A fresh start</h2>
+      <p>
+        {{session().owner?'Add a technician below, then create your first
+        service job.':'Your assigned jobs will appear here once the owner
+        creates them.'}}
+      </p>
+    </div>
+    }
+  </section>
+  @if(session().owner){
+  <details class="card">
+    <summary>Manage technicians</summary>
+    <p>
+      Create an account and share its password privately. Use a unique password
+      of 14–72 characters.
+    </p>
+    <form class="form-grid" (ngSubmit)="addTech()">
+      <label
+        >Technician username<input
+          name="techName"
+          [(ngModel)]="techName"
+          pattern="[a-zA-Z0-9._-]{3,60}"
+          required /></label
+      ><label
+        >Temporary password<input
+          name="techPassword"
+          [(ngModel)]="techPassword"
+          type="password"
+          minlength="14"
+          maxlength="72"
+          required
+          autocomplete="new-password" /></label
+      ><button [disabled]="busy()">Add technician</button>
+    </form>
+  </details>
+  } }
+</main>

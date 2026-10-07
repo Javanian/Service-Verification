@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "projects": {
+    "proof": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "index": "src/index.html",
+            "tsConfig": "tsconfig.json",
+            "styles": ["src/styles.css"],
+            "outputPath": "dist",
+            "outputHashing": "all"
+          }
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": { "buildTarget": "proof:build" }
+        }
+      }
+    }
+  }
+}
