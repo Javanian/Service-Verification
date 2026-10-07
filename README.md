@@ -4,11 +4,13 @@
 
 This is a portfolio release with a complete, tested core workflow. It is **not a claim of production readiness or validated demand**. No invoice engine, payments, GPS, electronic signatures, offline sync, native Android app, payroll, stock, routing, or marketplace.
 
-<img src="evidence/mobile-checklist.png" alt="Verified mobile service checklist" width="300">
+![Owner service-work queue](evidence/owner-work-queue.png)
 
-![Approved desktop report from the running app](evidence/approved-report.png)
+<img src="evidence/mobile-checklist.png" alt="Mobile technician workflow with unit completion and before-and-after evidence" width="340">
 
-[Generated print PDF](evidence/service-report.pdf)
+The screenshots show the running application with fictional jobs and clearly labeled synthetic AC illustrations. They are not UI mockups or real customer service photos.
+
+[Owner evidence review](evidence/owner-review.png) · [Printable report](evidence/approved-report.png) · [Generated PDF](evidence/service-report.pdf)
 
 ## Start locally in a cloud development environment
 
@@ -100,3 +102,7 @@ The app does not establish that photos are authentic or tamper-proof, or indepen
 The customer and buying intent are hypotheses. [Sejasa’s AC warranty information](https://www.sejasa.com/blog/list-garansi-service-ac/) provides context for documenting service and follow-up; it is not evidence that businesses will pay for this software. The release follows the narrow-outcome reasoning in [Jason Cohen’s SLC framework](https://longform.asmartbear.com/slc/). The delight hypothesis is quick per-unit completion and a useful handover document, not feature count. [Scope and acceptance criteria](docs/slc.md) define the boundary and the next customer-learning question.
 
 Documentation: [API](docs/api.md) · [Architecture / ADRs](docs/architecture.md) · [Runbook](docs/runbook.md) · [QA](docs/qa.md) · [SLC](docs/slc.md)
+
+## Reproduce the showcase
+
+Start the packaged app against a **fresh disposable database** on loopback (the capture defaults to port 8083), then run `node showcase.mjs` from `frontend/` with `SHOWCASE_ACK=LOCAL_DISPOSABLE_ONLY`, `OWNER_USERNAME`, `OWNER_PASSWORD` and a chosen `DEMO_TECH_PASSWORD`. Set `SHOWCASE_URL` if needed. Install Playwright Chromium first or set `CHROMIUM_PATH`. The script creates five fictional jobs and two demo technicians through the real API, uploads the checked-in synthetic AC illustrations, drives the UI, and captures the owner queue, owner review, technician workflow and approved report. It refuses remote hosts, never resets/deletes data and requires a fresh demo account namespace. The tiny flat-color fixture remains confined to technical regression tests.

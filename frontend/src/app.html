@@ -1,6 +1,6 @@
 <header class="no-print">
   <a class="brand" href="/"
-    >▦ <span>Service Verification<small>EVERY UNIT, ACCOUNTED FOR</small></span></a
+    ><span class="brand-mark" aria-hidden="true">SV</span><span>Service Verification<small>FIELD SERVICE RECORDS</small></span></a
   >@if(session().username){
   <div class="account">
     <span
@@ -128,7 +128,7 @@
       <h1>{{j.customer}}</h1>
       <p>{{j.location}} · Assigned to {{j.technician}}</p>
     </div>
-    <span class="badge">{{j.status.replaceAll('_',' ')}}</span>
+    <span class="badge" [attr.data-state]="j.status">{{j.status.replaceAll('_',' ')}}</span>
   </section>
   @if(j.reason){
   <div class="alert correction">
@@ -149,14 +149,17 @@
     Photo not confirmed: {{f.file.name}}. Your file is ready to retry.
     <button (click)="upload(f)" [disabled]="busy()">Retry upload</button>
   </div>
-  } @for(u of j.units;track u.id){
+  }
+  <div class="job-workspace"><section class="unit-stack" aria-label="Unit evidence">
+  @for(u of j.units;track u.id){
   <article class="card unit">
-    <div class="toolbar">
+    <details class="unit-fold" [open]="$first"><summary class="unit-summary">
+    <span class="unit-index">{{($index+1).toString().padStart(2,'0')}}</span><div class="unit-title">
       <h2>{{u.label}}</h2>
       <span class="badge" [class.ready]="complete(u)"
         >{{complete(u)?'Complete':'Needs evidence'}}</span
       >
-    </div>
+    </div><span class="expand-mark" aria-hidden="true">⌄</span></summary><div class="unit-body">
     <fieldset [disabled]="!editable(j)||busy()">
       <legend>Service checklist</legend>
       <div class="checks">
@@ -217,20 +220,20 @@
         >JPEG or PNG · up to 5 MB and 12 megapixels. Uploads save
         immediately.</small
       ><button (click)="save(u)">Save checklist</button>}
-    </fieldset>
+    </fieldset></div></details>
   </article>
   }
-  <section class="card review">
+  </section><aside class="review-column"><section class="card review" [class.technician-review]="!session().owner">
     <h2>Review & handover</h2>
     @if(editable(j)){
-    <p>Ready for the owner? Submit the saved evidence for every unit.</p>
+    @if(done(j)<j.units.length){<p><strong>{{j.units.length-done(j)}} unit{{j.units.length-done(j)>1?'s':''}} still need evidence.</strong> Complete and save each checklist before submitting.</p>}@else{<p>All units are documented. Submit the saved evidence for owner review.</p>}
     @if(dirty().size){
     <p class="alert correction">
       Save your edited checklists before submitting.
     </p>
     }<button
       (click)="transition('submit')"
-      [disabled]="busy()||dirty().size>0||!!failed()"
+      [disabled]="busy()||dirty().size>0||!!failed()||done(j)<j.units.length"
     >
       Submit for review</button
     >}@if(j.status==='SUBMITTED'){
@@ -275,8 +278,8 @@
     >
       View approved report · Revision {{r.revision}} ↗</button
     >}
-  </section>
-  <details class="card">
+  </section></aside></div>
+  <details class="card activity">
     <summary>Activity history</summary>
     @for(e of j.events;track $index){
     <p>
@@ -288,11 +291,10 @@
   } @else {
   <section class="job-heading">
     <div>
-      <p class="eyebrow">YOUR SERVICE WORKSPACE</p>
-      <h1>Small details.<br />Work well documented.</h1>
+      <p class="eyebrow">WORKSPACE / SERVICE JOBS</p>
+      <h1>Service jobs</h1>
       <p>
-        {{jobs().length}} jobs · A clear record from first photo to final
-        approval.
+        {{jobs().length}} jobs · Document the visit. Review the evidence. Hand over with confidence.
       </p>
     </div>
     @if(session().owner){<button (click)="creating.set(!creating())">
@@ -345,27 +347,14 @@
   </form>
   }
   <section class="job-list" aria-label="Service jobs">
+    <div class="queue-heading" aria-hidden="true"><span>CUSTOMER / LOCATION</span><span>ASSIGNED TO</span><span>STATUS</span><span>REFERENCE</span><span></span></div>
     @for(j of jobs();track j.id){<button class="job-card" (click)="open(j.id)">
-      <div class="toolbar">
-        <span class="eyebrow">{{j.invoice}}</span
-        ><span class="badge">{{j.status.replaceAll('_',' ')}}</span>
-      </div>
-      <h2>{{j.customer}}</h2>
-      <p>{{j.location}}</p>
-      <div class="toolbar">
-        <small>{{j.technician}} · Revision {{j.revision}}</small
-        ><span>Open job →</span>
-      </div></button
-    >}@empty{
-    <div class="card empty">
-      <h2>A fresh start</h2>
-      <p>
-        {{session().owner?'Add a technician below, then create your first
-        service job.':'Your assigned jobs will appear here once the owner
-        creates them.'}}
-      </p>
-    </div>
-    }
+      <div class="queue-customer"><h2>{{j.customer}}</h2><p>{{j.location}}</p></div>
+      <div class="queue-tech"><span class="avatar" aria-hidden="true">{{j.technician.slice(0,2).toUpperCase()}}</span><span>{{j.technician}}</span></div>
+      <div><span class="badge" [attr.data-state]="j.status">{{j.status.replaceAll('_',' ')}}</span></div>
+      <div class="queue-reference">{{j.invoice}}<small>Revision {{j.revision}}</small></div>
+      <span class="queue-arrow" aria-hidden="true"></span>
+    </button>}@empty{<div class="empty"><span class="empty-symbol" aria-hidden="true">▤</span><h2>Your next service visit starts here</h2><p>{{session().owner?'Add a technician below, then create your first service job.':'Your assigned jobs will appear here once the owner creates them.'}}</p></div>}
   </section>
   @if(session().owner){
   <details class="card">

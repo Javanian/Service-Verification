@@ -11,8 +11,8 @@ npm notice
 > service-verification-ui@1.0.0 test
 > node --test tests/*.test.mjs
 
-✔ completeness requires every check, nonblank actions and both photos (0.937365ms)
-✔ submitted and approved records are not editable (0.269293ms)
+✔ completeness requires every check, nonblank actions and both photos (0.821004ms)
+✔ submitted and approved records are not editable (0.19593ms)
 ℹ tests 2
 ℹ suites 0
 ℹ pass 2
@@ -20,7 +20,7 @@ npm notice
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 141.905663
+ℹ duration_ms 118.704919
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
@@ -33,12 +33,12 @@ npm notice
 ❯ Building...
 ✔ Building...
 Initial chunk files | Names         |  Raw size | Estimated transfer size
-main-KCMCBE4F.js    | main          | 199.13 kB |                55.07 kB
-styles-56ZKIFWS.css | styles        |   5.45 kB |                 1.60 kB
+main-YH2I3SOH.js    | main          | 200.63 kB |                55.49 kB
+styles-CUVLWUU3.css | styles        |  13.05 kB |                 3.23 kB
 
-                    | Initial total | 204.58 kB |                56.67 kB
+                    | Initial total | 213.68 kB |                58.71 kB
 
-Application bundle generation complete. [2.303 seconds] - 2026-10-07T06:31:16.799Z
+Application bundle generation complete. [2.416 seconds] - 2026-10-07T06:51:44.333Z
 
 Output location: /workspace/service-proof/frontend/dist
 

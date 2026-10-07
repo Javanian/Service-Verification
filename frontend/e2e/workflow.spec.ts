@@ -64,8 +64,9 @@ test("owner and technician complete correction, approval, immutable revision and
   const tp = await techContext.newPage();
   await login(tp, tech, password);
   await tp.getByRole("button", { name: /North Studio/ }).click();
-  await tp.getByRole("button", { name: "Submit for review" }).click();
-  await expect(tp.getByRole("alert")).toContainText("Each unit needs");
+  await expect(tp.getByRole("button", { name: "Submit for review" })).toBeDisabled();
+  const assignedJobs = await (await tp.request.get("/api/jobs")).json();
+  expect((await api(tp, `/jobs/${assignedJobs[0].id}/submit`, {version: 0})).status).toBe(422);
   await tp.getByLabel("Coil and filter cleaned").check();
   await tp.getByLabel("Drain checked", { exact: true }).check();
   await tp.getByLabel("Cooling checked", { exact: true }).check();
@@ -92,10 +93,10 @@ test("owner and technician complete correction, approval, immutable revision and
   await tp.getByRole("button", { name: "Save checklist" }).click();
   await expect(tp.getByRole("status")).toContainText("Unit checklist saved");
   await expect(tp.locator("body")).toHaveJSProperty("scrollWidth", 390);
-  await expect(tp.locator(".unit")).toHaveCSS("border-radius", "16px");
+  await expect(tp.locator(".unit")).toHaveCSS("border-radius", "6px");
   await expect(tp.locator("header")).toHaveCSS("display", "flex");
   await tp.screenshot({
-    path: "../evidence/mobile-checklist.png",
+    path: "../evidence/technical-mobile-checklist.png",
     fullPage: true,
   });
   await tp.getByRole("button", { name: "Submit for review" }).click();
@@ -140,9 +141,9 @@ test("owner and technician complete correction, approval, immutable revision and
   await page.locator(".report img").evaluateAll(async (images) => {
     await Promise.all(images.map((img) => (img as HTMLImageElement).decode()));
   });
-  await expect(page.locator(".report .card")).toHaveCSS("border-radius", "16px");
+  await expect(page.locator(".report .card")).toHaveCSS("border-bottom-width", "1px");
   await page.screenshot({
-    path: "../evidence/approved-report.png",
+    path: "../evidence/technical-approved-report.png",
     fullPage: true,
   });
   await page.evaluate(() => {
@@ -160,7 +161,7 @@ test("owner and technician complete correction, approval, immutable revision and
     page.getByRole("button", { name: "Print / Save PDF" }),
   ).toBeHidden();
   await page.pdf({
-    path: "../evidence/service-report.pdf",
+    path: "../evidence/technical-service-report.pdf",
     format: "A4",
     printBackground: true,
   });
