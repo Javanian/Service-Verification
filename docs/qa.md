@@ -1,39 +1,28 @@
 # Verification record
 
-Executed in a fresh Linux cloud container on 2026-10-07. No builds ran on the user's Windows computer. This directory was created separately from all configured repositories.
+Executed in the isolated Linux cloud workspace on 2026-10-07. No build ran on the user's Windows computer and no existing repository was modified.
 
-## Verified locally
-
-| Check | Result / evidence |
+| Check | Actual result |
 | --- | --- |
-| Kotlin / JVM 21 compilation and executable JAR | Pass; Spring Boot 3.5.16 |
-| PostgreSQL integration tests | 5 pass, 0 failures; PostgreSQL 17.6 with Flyway V1 |
-| Frontend TypeScript | Pass with strict types and Angular strict templates |
-| Frontend unit tests | 2 pass: completeness and editability |
-| Angular production build | Pass; approximately 205 kB initial raw JavaScript/CSS |
-| Chromium end-to-end | 3 passed against the final runtime container: full workflow, invalid authentication/private-file denial, expired-session recovery |
-| Mobile layout | 390 px viewport, no horizontal body overflow; screenshot retained |
-| Print | Print button invokes printing; print controls hidden; PDF generated |
-| Demo safety | Missing explicit opt-in and non-loopback URL rejected; local fictional job creation verified |
-| Compose | Configuration validation passed; database port is not exposed |
-| Container | Multi-stage build and browser smoke passed; non-root UID 10001, read-only root filesystem, 768 MB memory limit |
+| Backend / real PostgreSQL 17.11 | 10 tests passed, zero failures (7 integration, 3 focused safety tests) |
+| Frontend | Strict TypeScript, Angular production build and 2 unit tests passed |
+| Browser | 4 Chromium tests passed against the final non-root runtime container |
+| Mobile | 390-pixel checklist has no horizontal page overflow |
+| Print | Actual print action tested, controls hidden in print CSS, PDF generated |
+| Accessibility | Keyboard-only sign-in and axe WCAG A/AA checks passed on login, jobs and checklist |
+| npm audit | Zero reported vulnerabilities after the documented CLI dependency patch |
+| Runtime image scan | 0 high, 1 conditional critical, 16 medium, 4 low; conditional advisory assessed in security-review.md |
+| Database image scan | Zero reported vulnerabilities in the final non-root PostgreSQL image |
+| Backup/restore | Final PostgreSQL image: counts and photo/report hashes matched after restoring a disposable database |
+| Container | Multi-stage build passed; application UID 10001, read-only root, 768 MiB limit; database UID 70 |
+| GitHub Actions | Workflow included; exact-commit remote result must be checked after this checkpoint is pushed |
 
-The five backend tests cover: incomplete submit; correction reason and resubmission; owner-only approval; submitted/final locks; preservation of revision 1 after edits and revision 2 approval; direct SQL snapshot update rejection; technician job/list/photo isolation; unauthenticated photo denial; CSRF rejection; private no-store JPEG response; idempotent upload retry; retry-key content conflict; invalid active-file upload rejection; stale edit conflict; input bounds; and two truly simultaneous writes returning one 200 and one 409.
+Backend tests cover incomplete submission, correction/resubmission, owner-only approval, final locks and historical snapshots, direct SQL immutability, technician isolation, private files, CSRF, retry idempotency/conflicts, invalid image rejection, stale/simultaneous edits, validation, storage quotas/rollback, bounded requests, safe storage errors, and absence of XSLT view beans.
 
-Browser tests drive real forms and sessions against PostgreSQL. They force a network error during upload, reuse the retained upload retry, preserve unsaved actions, save/submit, request corrections, resubmit, approve, verify locked controls, print, deny another technician's photo access, create a new revision and verify the old snapshot still shows the original observations. Credentials in tests are explicitly disposable local fixtures, not real customer credentials.
+Browser tests exercise the real database-backed UI, force a photo-upload network failure and retry, preserve unsaved inputs, review corrections, approve, print, reject another technician's photo access, start a revision and verify the previous report is unchanged. They also verify invalid login and session-expiry recovery.
 
-Screenshots and generated PDF use fictional names and synthetic flat-color test photos. They prove rendering/workflow behavior, not successful real-world service.
+Screenshots and PDF are captured from the running application using fictional customers and synthetic flat-color image fixtures. They are not generated design mockups or evidence of real AC service. See `evidence/` for raw results and `docs/security-review.md` for the explicit Spring advisory assessment and remaining lower-severity findings.
 
-## Environment adaptations
+Maven/Docker in this cloud needed proxy CA/DNS configuration supplied outside the repository through temporary BuildKit secret mounts. TLS verification stayed enabled. Browser-download domains were blocked, so local browser QA used installed Chromium; CI installs the Playwright-pinned browser. Dependency databases were downloaded from their official GHCR mirrors.
 
-Maven needed the cloud HTTP proxy. Docker builds needed the environment CA and Java truststore plus proxy DNS mapping. These were supplied outside the repository as BuildKit secret mounts; TLS verification was not disabled and trust material is not embedded in the runtime image. The optional secret mounts are harmless on ordinary networks. Browser download domains were blocked, so QA used installed `/usr/bin/chromium` through Playwright. CI installs the Playwright-pinned Chromium build; that exact browser build has not yet run here.
-
-## Not run / blocked
-
-GitHub CLI authentication failed. `gh repo create Javanian/service-proof --private` returned `Forbidden`. The connected GitHub profile independently identified Javanian and the commit email; its exposed tools include no repository-creation endpoint. Therefore no repository URL, pushed SHA, remote CI result or release artifact is claimed. GitHub Actions definitions are present, pinned to verified upstream commit SHAs, but must run after authenticated creation and push.
-
-No production deployment, paid services, independent penetration test, full accessibility audit, performance/load test, cross-browser printing, backup restore drill or customer demand validation was performed. These remain launch prerequisites, not hidden completed checks.
-
-## Final container evidence
-
-Image ID: `sha256:5ad5ffde13d03af8161c00faedc290b7fc6a9ff6af2ac2be444f527272ea9c0a`. Browser tests ran against this image on loopback port 8081. The image was built from the implementation in this initial source commit; the image intentionally contains no Git credentials or cloud proxy trust material. GitHub workflow YAML parses locally, but remote execution remains blocked.
+No production deployment, independent penetration test, full accessibility audit, load test, cross-browser print certification, encrypted/offsite recovery drill or customer demand validation is claimed. Operator TLS/secrets/domain, offboarding/recovery and privacy/retention procedures remain launch prerequisites.

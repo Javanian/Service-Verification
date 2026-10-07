@@ -1,0 +1,5 @@
+FROM postgres:17.11-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+# The server runs directly as postgres. Remove the unused root user-switch helper,
+# whose bundled Go standard library adds avoidable vulnerability findings.
+RUN rm /usr/local/bin/gosu
+USER 70:70

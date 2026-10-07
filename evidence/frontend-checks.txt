@@ -1,5 +1,5 @@
 
-> service-proof-ui@1.0.0 typecheck
+> service-verification-ui@1.0.0 typecheck
 > tsc --noEmit
 
 npm notice
@@ -8,11 +8,11 @@ npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-> service-proof-ui@1.0.0 test
+> service-verification-ui@1.0.0 test
 > node --test tests/*.test.mjs
 
-✔ completeness requires every check, nonblank actions and both photos (0.670392ms)
-✔ submitted and approved records are not editable (0.176227ms)
+✔ completeness requires every check, nonblank actions and both photos (0.937365ms)
+✔ submitted and approved records are not editable (0.269293ms)
 ℹ tests 2
 ℹ suites 0
 ℹ pass 2
@@ -20,25 +20,25 @@ npm notice
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 106.584943
+ℹ duration_ms 141.905663
 npm notice
 npm notice New major version of npm available! 11.9.0 -> 12.2.0
 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
 npm notice To update run: npm install -g npm@12.2.0
 npm notice
 
-> service-proof-ui@1.0.0 build
+> service-verification-ui@1.0.0 build
 > ng build
 
 ❯ Building...
 ✔ Building...
 Initial chunk files | Names         |  Raw size | Estimated transfer size
-main-V6ES2NV6.js    | main          | 199.12 kB |                55.05 kB
+main-KCMCBE4F.js    | main          | 199.13 kB |                55.07 kB
 styles-56ZKIFWS.css | styles        |   5.45 kB |                 1.60 kB
 
-                    | Initial total | 204.57 kB |                56.65 kB
+                    | Initial total | 204.58 kB |                56.67 kB
 
-Application bundle generation complete. [2.077 seconds] - 2026-10-07T06:17:33.685Z
+Application bundle generation complete. [2.303 seconds] - 2026-10-07T06:31:16.799Z
 
 Output location: /workspace/service-proof/frontend/dist
 

@@ -27,8 +27,8 @@ test("owner and technician complete correction, approval, immutable revision and
   page,
 }) => {
   const suffix = Date.now().toString();
-  const tech = "tech" + suffix;
-  const other = "other" + suffix;
+  const tech = "alex_" + suffix.slice(-6);
+  const other = "jordan_" + suffix.slice(-6);
   await login(
     page,
     process.env["OWNER_USERNAME"] || "owner",
@@ -47,7 +47,7 @@ test("owner and technician complete correction, approval, immutable revision and
   await page.getByRole("button", { name: "+ New service job" }).click();
   await page
     .getByLabel("Customer", { exact: true })
-    .fill("North Studio " + suffix);
+    .fill("North Studio");
   await page
     .getByLabel("Location", { exact: true })
     .fill("Bandung · Second floor");
@@ -213,4 +213,26 @@ test('expired session returns to sign-in without losing access to recovery', asy
   await page.getByRole('button', { name: 'Reload job' }).click();
   await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('Sign in again');
+});
+
+test('keyboard sign-in and focused WCAG checks on login, jobs and checklist', async ({ page }) => {
+  const { default: AxeBuilder } = await import('@axe-core/playwright');
+  await page.goto('/');
+  const violations = async () => (await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze()).violations;
+  expect(await violations()).toEqual([]);
+  await page.locator('.brand').focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Username', {exact:true})).toBeFocused();
+  await page.keyboard.type(process.env['OWNER_USERNAME'] || 'owner');
+  await page.keyboard.press('Tab');
+  await expect(page.getByLabel('Password', {exact:true})).toBeFocused();
+  await page.keyboard.type(process.env['OWNER_PASSWORD'] || 'local-owner-password');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', {name:'Sign in',exact:true})).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('button', {name:'Sign out'})).toBeVisible();
+  expect(await violations()).toEqual([]);
+  await page.getByRole('button', {name:/North Studio/}).first().click();
+  await expect(page.getByRole('button', {name:'Reload job'})).toBeVisible();
+  expect(await violations()).toEqual([]);
 });

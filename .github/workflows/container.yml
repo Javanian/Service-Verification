@@ -9,11 +9,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - run: docker build --label org.opencontainers.image.revision=${{ github.sha }} -t service-proof:${{ github.sha }} .
-      - run: docker save service-proof:${{ github.sha }} | gzip > service-proof.tar.gz
+      - run: docker build --label org.opencontainers.image.revision=${{ github.sha }} -t service-verification:${{ github.sha }} .
+      - run: docker build -f Dockerfile.postgres -t service-verification-db:${{ github.sha }} .
+      - run: docker save service-verification:${{ github.sha }} service-verification-db:${{ github.sha }} | gzip > service-verification.tar.gz
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: service-proof-container-${{ github.sha }}
-          path: service-proof.tar.gz
+          name: service-verification-container-${{ github.sha }}
+          path: service-verification.tar.gz
           retention-days: 7
 # Creates a downloadable image only. No registry push or deployment permissions.

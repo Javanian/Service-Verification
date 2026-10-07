@@ -5,7 +5,7 @@ import { DatePipe } from "@angular/common";
 import { Job, Unit, complete, editable } from "./model";
 
 @Component({
-  selector: "proof-app",
+  selector: "verification-app",
   standalone: true,
   imports: [FormsModule, DatePipe],
   templateUrl: "./app.html",

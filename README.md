@@ -1,4 +1,4 @@
-# Service Proof
+# Service Verification
 
 **Every unit, accounted for.** A compact service-evidence workspace for a small AC servicing business: assign a job, document each unit, correct the record, approve it, and print an immutable revision as an attachment to an external invoice.
 
@@ -6,7 +6,9 @@ This is a portfolio release with a complete, tested core workflow. It is **not a
 
 <img src="evidence/mobile-checklist.png" alt="Verified mobile service checklist" width="300">
 
-[Approved report screenshot](evidence/approved-report.png) · [Generated print PDF](evidence/service-report.pdf)
+![Approved desktop report from the running app](evidence/approved-report.png)
+
+[Generated print PDF](evidence/service-report.pdf)
 
 ## Start locally in a cloud development environment
 
@@ -45,11 +47,12 @@ One Kotlin / Spring Boot modular backend serves an Angular frontend from the sam
 | JVM | 21; runtime image pinned by digest |
 | Spring Boot | 3.5.16 |
 | Kotlin | 1.9.25, managed by the pinned Boot parent |
+| Security maintenance overrides | Jackson 2.21.7, Tomcat 10.1.60, PostgreSQL JDBC 42.7.13 |
 | Maven | 3.9.11, wrapper archive SHA-256 checked |
 | Angular / CLI | 21.2.25 |
 | Node | 24.19.0 |
 | TypeScript / RxJS | 5.9.3 / 7.8.2 |
-| PostgreSQL | 17.6, image pinned by digest |
+| PostgreSQL | 17.11, image pinned by digest |
 | Playwright | 1.56.1 |
 
 `package-lock.json` locks frontend transitive dependencies; the Boot BOM pins managed JVM dependencies. All container base images have immutable digests. These are reproducible selections, not a promise that they are the newest or free of vulnerabilities. Compatibility was checked using the official [Spring Boot 3.5 requirements](https://docs.spring.io/spring-boot/3.5/system-requirements.html), [Angular version matrix](https://angular.dev/reference/versions), Maven Central metadata and npm package metadata on 2026-10-07. See [architecture decisions](docs/architecture.md).
@@ -63,10 +66,10 @@ export DB_PASSWORD='your-disposable-database-password'
 export OWNER_USERNAME=owner
 export OWNER_PASSWORD='your-disposable-owner-password'
 export COOKIE_SECURE=false
-docker run --rm -d --name service-proof-test-db \
+docker run --rm -d --name service-verification-test-db \
   -e POSTGRES_DB=serviceproof_test -e POSTGRES_USER=serviceproof \
   -e POSTGRES_PASSWORD="$DB_PASSWORD" -p 127.0.0.1:5432:5432 \
-  postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+  postgres:17.11-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
 # Wait for pg_isready before testing; use a free port if 5432 is occupied.
 # Optional: TEST_DB_URL=jdbc:postgresql://localhost:5432/serviceproof_test
 scripts/verify.sh
@@ -88,9 +91,9 @@ The GitHub Actions workflow runs these checks and a container build. The separat
 
 ## Security and launch boundary
 
-Assignment checks cover job details, writes, images and historical reports. Images have no public URLs, are size/pixel bounded, decoded and re-encoded as JPEG, and served with `no-store`. Database transactions combine state/version guards with row locks. Approved report rows reject SQL updates/deletes. Passwords are BCrypt hashes; secrets come from environment variables. CSRF, HttpOnly/SameSite cookies, CSP, and a bounded single-instance sign-in limiter are enabled.
+Assignment checks cover job details, writes, images and historical reports. Images have no public URLs, are size/pixel bounded, decoded and re-encoded as JPEG, and served with `no-store`. Database transactions combine state/version guards with row locks. Approved report rows reject SQL updates/deletes. Passwords are BCrypt hashes; secrets come from environment variables. CSRF, HttpOnly/SameSite cookies, CSP, and bounded single-instance sign-in/public request limits are enabled. JSON bodies and photo storage also have explicit limits; storage failures return safe retry guidance.
 
-The app does not establish that photos are authentic or tamper-proof, or independently verify account identities. The database administrator can alter the database. Printed PDFs are private exports whose onward handling is the owner’s responsibility. Before customer use, resolve account recovery/deactivation, independent security review, dependency scanning, HTTPS/edge rate limits, backups and restore drills, retention/storage limits, privacy consent and operational monitoring. See the [runbook](docs/runbook.md).
+The app does not establish that photos are authentic or tamper-proof, or independently verify account identities. The database administrator can alter the database. Printed PDFs are private exports whose onward handling is the owner’s responsibility. Before customer use, resolve account recovery/deactivation, independent security review, ongoing vulnerability review, HTTPS/edge rate limits, encrypted/offsite backups, retention, privacy consent and operational monitoring. See the [runbook](docs/runbook.md) and [security review](docs/security-review.md).
 
 ## Why this product?
 

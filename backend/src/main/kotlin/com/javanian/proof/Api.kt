@@ -118,6 +118,24 @@ class Api(val jobs: Jobs, val photos: Photos, val passwords: BCryptPasswordEncod
 
 @RestControllerAdvice
 class Errors {
+    @ExceptionHandler(
+        org.springframework.dao.DataAccessException::class,
+        org.springframework.transaction.TransactionException::class,
+    )
+    fun storage(
+        e: org.springframework.dao.DataAccessException
+    ): ResponseEntity<Map<String, String>> {
+        org.slf4j.LoggerFactory.getLogger(Errors::class.java)
+            .warn("Database operation failed ({})", e.javaClass.simpleName)
+        return ResponseEntity.status(503)
+            .body(
+                mapOf(
+                    "message" to
+                        "Storage is temporarily unavailable. Your changes were not confirmed. Retry when the service is restored."
+                )
+            )
+    }
+
     @ExceptionHandler(ResponseStatusException::class)
     fun state(e: ResponseStatusException) =
         ResponseEntity.status(e.statusCode).body(mapOf("message" to e.reason))

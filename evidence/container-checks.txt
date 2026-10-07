@@ -1,20 +1,19 @@
-#19 35.04 [INFO] ------------------------------------------------------------------------
-#19 35.04 [INFO] Total time:  32.683 s
-#19 35.04 [INFO] Finished at: 2026-10-07T06:19:03Z
-#19 35.04 [INFO] ------------------------------------------------------------------------
-#19 DONE 35.1s
+#20 33.70 [INFO] The original artifact has been renamed to /build/target/service-verification-1.0.0.jar.original
+#20 33.71 [INFO] ------------------------------------------------------------------------
+#20 33.71 [INFO] BUILD SUCCESS
+#20 33.71 [INFO] ------------------------------------------------------------------------
+#20 33.71 [INFO] Total time:  31.179 s
+#20 33.71 [INFO] Finished at: 2026-10-07T06:34:26Z
+#20 33.71 [INFO] ------------------------------------------------------------------------
+#20 DONE 33.8s
 
-#20 [stage-2 2/3] WORKDIR /app
-#20 CACHED
-
-#21 [stage-2 3/3] COPY --from=backend /build/target/service-proof-1.0.0.jar app.jar
+#21 [stage-2 3/3] COPY --from=backend /build/target/service-verification-1.0.0.jar app.jar
 #21 DONE 0.3s
 
 #22 exporting to image
 #22 exporting layers
-#22 exporting layers 0.8s done
-#22 writing image sha256:5ad5ffde13d03af8161c00faedc290b7fc6a9ff6af2ac2be444f527272ea9c0a done
-#22 naming to docker.io/library/service-proof:local done
-#22 DONE 0.8s
-Runtime inspection: user=10001:10001; readonly=true; memory=805306368 bytes; status=running.
-Compose configuration and workflow YAML parse successfully.
+#22 exporting layers 0.2s done
+#22 writing image sha256:85ecd3d392df3e610a9817717b4b481d9b5b575541d3b2615362a46956631470 done
+#22 naming to docker.io/library/service-verification:local done
+#22 DONE 0.2s
+Runtime: UID 10001; read-only filesystem; 768 MiB memory limit. PostgreSQL UID 70.

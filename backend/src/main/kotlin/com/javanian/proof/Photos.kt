@@ -13,7 +13,19 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 
 @Service
-class Photos(val jobs: Jobs) {
+class Photos(
+    val jobs: Jobs,
+    @org.springframework.beans.factory.annotation.Value("\${proof.photos.max-job-bytes:104857600}")
+    val maxJobBytes: Long,
+    @org.springframework.beans.factory.annotation.Value(
+        "\${proof.photos.max-total-bytes:1073741824}"
+    )
+    val maxTotalBytes: Long,
+) {
+    init {
+        require(maxJobBytes > 0 && maxTotalBytes > 0) { "Photo quotas must be positive" }
+    }
+
     @Transactional
     fun upload(
         id: UUID,
@@ -52,6 +64,25 @@ class Photos(val jobs: Jobs) {
         )
             fail(HttpStatus.NOT_FOUND, "Unit not found")
         val safe = normalize(source)
+        // Serialize quota admission across jobs; retained historical images count toward limits.
+        jobs.db.execute("select pg_advisory_xact_lock(73456001)")
+        val jobBytes =
+            jobs.db.queryForObject(
+                "select coalesce(sum(octet_length(p.bytes)),0) from photos p join units u on u.id=p.unit_id where u.job_id=?",
+                Long::class.java,
+                id,
+            ) ?: 0L
+        val totalBytes =
+            jobs.db.queryForObject(
+                "select coalesce(sum(octet_length(bytes)),0) from photos",
+                Long::class.java,
+            ) ?: 0L
+        if (safe.size > maxJobBytes - jobBytes || safe.size > maxTotalBytes - totalBytes) {
+            fail(
+                HttpStatus.INSUFFICIENT_STORAGE,
+                "Photo storage limit reached. Ask the owner to review storage capacity before retrying. Existing reports remain available.",
+            )
+        }
         val photo = UUID.randomUUID()
         jobs.db.update(
             "insert into photos(id,unit_id,kind,request_key,source_hash,bytes) values(?,?,?,?,?,?)",

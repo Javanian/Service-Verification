@@ -312,4 +312,60 @@ class WorkflowTest {
             pool.shutdownNow()
         }
     }
+
+    @Autowired lateinit var jobs: Jobs
+    @Autowired lateinit var transactions: org.springframework.transaction.PlatformTransactionManager
+
+    @Test
+    fun `job and deployment photo quotas reject atomically`() {
+        val j = create()
+        val auth =
+            org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                "alice",
+                "unused",
+                listOf(
+                    org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_TECH")
+                ),
+            )
+        for ((jobLimit, totalLimit) in listOf(1L to 100000L, 100000L to 1L)) {
+            val error =
+                assertThrows(org.springframework.web.server.ResponseStatusException::class.java) {
+                    org.springframework.transaction.support
+                        .TransactionTemplate(transactions)
+                        .execute {
+                            Photos(jobs, jobLimit, totalLimit)
+                                .upload(
+                                    UUID.fromString(j["id"].asText()),
+                                    UUID.fromString(j["units"][0]["id"].asText()),
+                                    "before",
+                                    0,
+                                    UUID.randomUUID(),
+                                    MockMultipartFile("file", "photo.png", "image/png", png()),
+                                    auth,
+                                )
+                        }
+                }
+            assertEquals(507, error.statusCode.value())
+            assertEquals(0, db.queryForObject("select count(*) from photos", Int::class.java))
+            assertEquals(0, current(j["id"].asText())["version"].asInt())
+        }
+    }
+
+    @Autowired lateinit var context: org.springframework.context.ApplicationContext
+
+    @Test
+    fun `no XSLT view rendering path is configured`() {
+        assertTrue(
+            context
+                .getBeansOfType(org.springframework.web.servlet.view.xslt.XsltView::class.java)
+                .isEmpty()
+        )
+        assertTrue(
+            context
+                .getBeansOfType(
+                    org.springframework.web.servlet.view.xslt.XsltViewResolver::class.java
+                )
+                .isEmpty()
+        )
+    }
 }

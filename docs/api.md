@@ -25,6 +25,8 @@ Customer/location/invoice maximums: 160/300/100 characters; all required and non
 
 A job response uses database-style fields (`drain_checked`, `before_id`, `created_at`); write commands use the explicitly documented camelCase inputs. UUID IDs are opaque. Every successful mutation returns the updated job including `version`; use that version in the next request. Photo retries reuse the **same** UUID key and bytes. Do not automatically overwrite a 409 response: reload, reconcile inputs and retry deliberately.
 
-Error semantics: 400 invalid input/image; 401 no valid login; 403 role/CSRF denied; 404 missing or inaccessible resource; 409 stale version, locked/invalid transition or conflicting retry key; 413 request too large; 422 incomplete evidence; 429 too many login attempts (Retry-After 60 seconds). Application errors include `{message}`. Security-filter errors may have a generic body; clients must respect the status code.
+Error semantics: 400 invalid input/image; 401 no valid login; 403 role/CSRF denied; 404 missing or inaccessible resource; 409 stale version, locked/invalid transition or conflicting retry key; 413 request too large; 422 incomplete evidence; 429 too many login/public requests (Retry-After 60 seconds); 503 storage unavailable; 507 photo storage quota reached. Application errors include `{message}`. Security-filter errors may have a generic body; clients must respect the status code.
+
+JSON request bodies are limited to 64 KiB, form bodies to 16 KiB, multipart requests to 6 MB. Default retained-photo quotas: 100 MiB/job, 1 GiB/instance.
 
 No public report-sharing endpoint exists. A PDF is an explicit owner/user export through browser printing.

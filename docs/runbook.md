@@ -11,6 +11,7 @@ One private instance per small business. One owner bootstraps from environment; 
 - `DB_PASSWORD`: required secret, no default.
 - `OWNER_USERNAME`, `OWNER_PASSWORD`: required on an empty database; no bundled demo owner.
 - `COOKIE_SECURE`: defaults true. Set false only for loopback HTTP development.
+- `PHOTO_JOB_MAX_BYTES`, `PHOTO_TOTAL_MAX_BYTES`: positive byte limits; defaults 104857600 and 1073741824. A 507 leaves stored evidence unchanged; resolve capacity before retrying.
 - `TEST_DB_URL`: test-only database, default `jdbc:postgresql://localhost:5432/serviceproof_test`; its name must end in `_test` because integration fixtures truncate it.
 
 Keep `.env` untracked and readable only by the operator. Do not paste credentials into issue trackers, screenshots or support logs. Compose requires nonempty bootstrap secrets even after initialization; a managed deployment should inject secrets from its own secret manager instead.
@@ -29,7 +30,7 @@ PostgreSQL contains accounts, all photos and snapshots. Back up the database and
 docker compose exec -T db pg_dump -U serviceproof -Fc serviceproof > serviceproof.backup
 ```
 
-Encrypt backups, restrict access, choose retention and run a documented restore drill. Restore with `pg_restore` into a **new empty database**, apply no ad-hoc report edits, then compare job/report counts and inspect sample photo/report integrity. Backup/restore has not been exercised as part of the portfolio QA. SQL report immutability does not defend against privileged administrators or destructive schema operations.
+Encrypt backups, restrict access, choose retention and run a documented restore drill. Restore with `pg_restore` into a **new empty database**, apply no ad-hoc report edits, then compare job/report counts and inspect sample photo/report integrity. A disposable local backup/restore drill verifies account/job/unit/photo/report counts and photo/report hashes; the deployed environment still needs an encrypted offsite recovery drill. SQL report immutability does not defend against privileged administrators or destructive schema operations.
 
 ## Release procedure
 
@@ -44,12 +45,12 @@ Forward migration is preferred. Older application versions may not understand ne
 ## Launch blockers
 
 - Actual customer demand, report acceptance and willingness to pay are unvalidated.
-- Independent security review and current dependency/container vulnerability scanning remain outstanding.
-- HTTPS, reverse-proxy/body-size policy and distributed edge rate limits are not deployed. The built-in limiter permits 20 login requests per remote address per minute for one instance; it does not trust forwarded client headers and may group users behind a proxy.
+- Independent security review remains outstanding. Dated npm/container scans and the documented conditional Spring advisory assessment are in the security review; rescan at every release.
+- HTTPS, reverse-proxy/body-size policy and distributed edge rate limits are not deployed. The built-in limiter permits 20 login requests and 120 public session/static requests per remote address per minute for one instance; it does not trust forwarded client headers and may group users behind a proxy.
 - Password rotation/recovery, account deactivation and staff offboarding need a secure operator workflow.
-- Photo quotas, retention/deletion policy, privacy consent, encrypted backups and a restore drill need an owner. Photos are retained to preserve approved history; storage can grow.
+- Default photo quotas are implemented (100 MiB/job, 1 GiB/instance, retained history included). Retention/deletion policy, privacy consent, encrypted/offsite backups and deployed recovery drills still need an owner. Photos are retained to preserve approved history; storage can grow.
 - Database encryption at rest, monitoring/alerting, service uptime, load tests, accessibility audit and cross-browser printing are not verified.
 - No malware scanner is included; format decoding/re-encoding and input limits reduce file risk without certifying uploads safe against every decoder vulnerability.
-- A GitHub repository must be created and the commit pushed with valid credentials before remote CI and release artifacts can be verified.
+- Verify the exact release commit in GitHub Actions before rollout. No production deployment is performed by this repository.
 
 This is a tested portfolio workflow, not a certified or production-ready service.

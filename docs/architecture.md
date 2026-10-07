@@ -27,7 +27,7 @@ One deployment unit fits one small business. JDBC makes authorization queries an
 
 ## ADR 002: Private images in PostgreSQL
 
-Image metadata and bytes participate in the same transaction; no public bucket, orphan-file cleanup or paid service is needed. Inputs are limited to 5 MB/12 megapixels and decoded with a format-aware reader before allocation. JPEG re-encoding drops source metadata and active file content. Originals are not retained. Re-encoding does not prove a photo is truthful. Old images remain for historical reports; storage quotas and a retention policy are launch prerequisites.
+Image metadata and bytes participate in the same transaction; no public bucket, orphan-file cleanup or paid service is needed. Inputs are limited to 5 MB/12 megapixels and decoded with a format-aware reader before allocation. JPEG re-encoding drops source metadata and active file content. Originals are not retained. Re-encoding does not prove a photo is truthful. Old images remain for historical reports; storage quotas are enforced during each upload, while a retention/deletion policy remains a launch prerequisite.
 
 An upload has a client-generated UUID retry key and source SHA-256. Retrying the same unit/kind/bytes returns success without another photo/version increment. Reusing a key for different content returns 409. Retries after a record becomes locked are rejected. The UI keeps the File object and retry key in memory and preserves unsaved checklist inputs during uploads. Refreshing the page discards unsaved inputs/files; there is no offline queue.
 

@@ -16,9 +16,9 @@ RUN --mount=type=secret,id=maven_settings,target=/tmp/settings.xml \
     if [ -f /tmp/cacerts ]; then export MAVEN_OPTS="-Djavax.net.ssl.trustStore=/tmp/cacerts"; fi; \
     if [ -f /tmp/settings.xml ]; then mvn -s /tmp/settings.xml -B package -DskipTests; else mvn -B package -DskipTests; fi
 
-FROM eclipse-temurin:21-jre-jammy@sha256:f04fb34e053148344e83317976114ec3f37e4b830ec8bdab5a2fe3cecd7d010b
+FROM eclipse-temurin:21-jre-noble@sha256:000fd431958bc81a24abe1e8e5f0f0fd3ae365a594bd50aadb20696805f9408c
 WORKDIR /app
-COPY --from=backend /build/target/service-proof-1.0.0.jar app.jar
+COPY --from=backend /build/target/service-verification-1.0.0.jar app.jar
 USER 10001:10001
 EXPOSE 8080
 ENTRYPOINT ["java","-XX:MaxRAMPercentage=70","-jar","/app/app.jar"]

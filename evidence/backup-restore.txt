@@ -1,0 +1,4 @@
+PASS: pg_dump/pg_restore on the final non-root PostgreSQL 17.11 image.
+Account/job/unit/photo/report counts and ordered photo/report hashes match.
+5|2|2|4|2|e038bdb32bcb35ec9f0ceaa10eae3c05|0567472676aaf09c1ae0196a78e5f290
+Synthetic local fixtures only; offsite/encrypted recovery is an operator prerequisite.

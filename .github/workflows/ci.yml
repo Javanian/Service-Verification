@@ -7,10 +7,10 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     services:
       postgres:
-        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+        image: postgres:17.11-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
         env:
           POSTGRES_DB: serviceproof_test
           POSTGRES_USER: serviceproof
@@ -38,16 +38,17 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: scripts/verify.sh
+      - run: npm --prefix frontend audit --audit-level=high
       - name: Browser integration database
         run: PGPASSWORD="$DB_PASSWORD" psql -h localhost -U serviceproof -d serviceproof_test -c 'CREATE DATABASE serviceproof_e2e'
       - name: Start packaged application
         run: |
-          DB_URL=jdbc:postgresql://localhost:5432/serviceproof_e2e java -jar backend/target/service-proof-1.0.0.jar > /tmp/service-proof.log 2>&1 &
+          DB_URL=jdbc:postgresql://localhost:5432/serviceproof_e2e java -jar backend/target/service-verification-1.0.0.jar > /tmp/service-verification.log 2>&1 &
           for i in $(seq 1 60); do
             if curl -fsS http://localhost:8080/api/session >/dev/null; then exit 0; fi
             sleep 1
           done
-          cat /tmp/service-proof.log
+          cat /tmp/service-verification.log
           exit 1
       - working-directory: frontend
         run: npx playwright install --with-deps chromium
@@ -56,7 +57,18 @@ jobs:
           BASE_URL: http://localhost:8080
         run: npm run e2e
       - name: Build runtime container
-        run: docker build -t service-proof:ci .
+        run: docker build -t service-verification:ci .
+      - name: Build database image
+        run: docker build -f Dockerfile.postgres -t service-verification-db:ci .
+      - name: Scan runtime images
+        run: |
+          docker builder prune -af
+          for pair in service-verification:ci,image-scan service-verification-db:ci,postgres-scan; do
+            image="${pair%,*}"
+            output="${pair#*,}"
+            docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v "$HOME/.cache/trivy:/root/.cache/trivy" aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa image --db-repository ghcr.io/aquasecurity/trivy-db:2 --java-db-repository ghcr.io/aquasecurity/trivy-java-db:1 --scanners vuln --format json "$image" > "evidence/$output.json"
+          done
+          node scripts/check-scan.mjs evidence/image-scan.json evidence/postgres-scan.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -67,3 +79,4 @@ jobs:
             frontend/test-results
             evidence/*.png
             evidence/*.pdf
+            evidence/*scan.json

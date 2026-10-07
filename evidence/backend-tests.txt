@@ -1,6 +1,7 @@
-2026-10-07T06:18:05.047Z  INFO 5600 --- [Service Proof] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5432/serviceproof_test (PostgreSQL 17.6)
-[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.616 s -- in com.javanian.proof.WorkflowTest
-[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.203 s -- in com.javanian.proof.SafetyTest
+2026-10-07T06:33:42.419Z  INFO 11991 --- [Service Verification] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5434/serviceproof_test (PostgreSQL 17.11)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.416 s -- in com.javanian.proof.WorkflowTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
-[INFO] Total time:  13.078 s
-[INFO] Finished at: 2026-10-07T06:18:07Z
+[INFO] Total time:  19.531 s
+[INFO] Finished at: 2026-10-07T06:33:46Z
